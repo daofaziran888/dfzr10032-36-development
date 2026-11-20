@@ -23,6 +23,31 @@ def export_entries() -> dict[str, Any]:
     return {"module": "monitor", "total": total, "items": items}
 
 
+@router.get("/reconciliation")
+def list_reconciliation(
+    download_id: str | None = Query(default=None, description="按报告快照下载标识回查"),
+    period: str | None = Query(default=None, description="按原统计周期回查"),
+    batch: str | None = Query(default=None, description="按更正批次回查"),
+) -> dict[str, Any]:
+    """来源对账记录：消费报告快照与更正后写入，可追查原周期和更正批次。"""
+    items = service.list_reconciliation(download_id=download_id, period=period, batch=batch)
+    return {"items": items, "total": len(items)}
+
+
+@router.post("/reconciliation/snapshot")
+def consume_snapshot(payload: EntryPayload) -> dict[str, Any]:
+    """消费一份已确认的采集报告快照，按来源写入对账记录。"""
+    items, message = service.consume_snapshot(payload.values)
+    return {"ok": items is not None, "message": message, "items": items or []}
+
+
+@router.post("/reconciliation/corrections")
+def consume_corrections(payload: EntryPayload) -> dict[str, Any]:
+    """消费报告快照的更正回执，写入带原周期与更正批次的来源对账记录。"""
+    items, message = service.consume_corrections(payload.values)
+    return {"ok": items is not None, "message": message, "items": items or []}
+
+
 @router.get("", response_model=PageResult[dict])
 def list_entries(
     request: Request,

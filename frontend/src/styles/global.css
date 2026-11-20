@@ -42,3 +42,10 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .modal-field span{font-size:13px;color:var(--muted)}
 .modal-field input{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px}
 .modal-foot{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--border);padding:12px 18px}
+.panel { margin-top: 20px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.panel-head h3 { margin: 0; font-size: 15px; }
+.panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.panel-hint { color: var(--muted); font-size: 12px; margin: 4px 0; }
+.package-preview { margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 10px; }
+.package-preview h4 { margin: 0 0 4px; font-size: 14px; }

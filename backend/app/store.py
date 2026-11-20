@@ -4,19 +4,27 @@
 """
 from __future__ import annotations
 
+import copy
 from typing import Any
 
 from app.seed import SEED_ROWS
 
+# 这些表是报告出包、回执与对账的内部台账，不参与运营概览的模块统计。
+INTERNAL_MODULES = {"report_result", "report_snapshot", "report_receipt", "report_ledger", "monitor_reconciliation"}
+
 
 class Store:
     def __init__(self) -> None:
+        self.reset()
+
+    def reset(self) -> None:
+        """把内存仓库恢复到示例数据状态，便于本地演示与自动化测试反复执行。"""
         self._tables: dict[str, list[dict[str, Any]]] = {
-            name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
+            name: copy.deepcopy(rows) for name, rows in SEED_ROWS.items()
         }
 
     def module_names(self) -> list[str]:
-        return sorted(self._tables)
+        return sorted(name for name in self._tables if name not in INTERNAL_MODULES)
 
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])

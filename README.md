@@ -65,7 +65,36 @@ npm run dev
 | 采集转换管道 | `transform` | 转换节点 | 节点编号、输入来源、输出目标 |
 | 数据流转编排 | `flow` | 流转管道 | 管道编号、管道名称、起始节点 |
 | 数据血缘追踪 | `lineage` | 血缘关系 | 关系编号、上游节点、下游节点 |
-| 采集报告 | `report` | 采集报告 | 报告编号、采集源、统计周期 |
+| 采集报告 | `report` | 采集报告 / 快照包 | 报告编号、采集源、统计周期 |
+
+## 采集报告快照与更正
+
+采集报告模块除了登记记录，还提供可下载的报告快照包，用于交付给各库核算：
+
+- `GET /api/report/snapshots/download?period=2026-W47`：按统计周期聚合**已确认**的采集结果，
+  返回带 `attachment` 的 JSON 包（响应头带 `X-Download-Id`）。包内含来源汇总、逐笔明细和
+  `核对` 结果——每个来源的成功量、失败量、记录数都必须等于明细逐笔计数，否则拒绝出包。
+- `GET /api/report/snapshots`：已留档的快照清单；`GET /api/report/snapshots/{下载标识}`
+  按原标识回查当时的包，`/file` 重新下载。更正之后旧包内容保持不变。
+- `POST /api/report/corrections`：登记更正回执（统计周期、采集源、更正前/后失败量）。
+  同一来源同一周期的同一次变化只计入一次，重复提交返回原回执；回执记录基础数与应补差额
+  （`应补差额` = 更正后 − 更正前）。
+- `POST /api/report/claims`：`模式=核销` 按回执逐条核销旧数，同一个回执只核销一次；
+  `模式=入账` 按周期领取可入账报告，返回基础失败量、可入账失败量与应补差额，并带出
+  关联回执及其已核销批次。
+- `GET /api/report/ledger`：核销与入账的台账，可追查回执编号、更正批次与统计周期。
+
+采集监控消费报告快照及其更正，写入来源对账记录：
+
+- `POST /api/monitor/reconciliation/snapshot`：按下载标识消费快照，每个来源一条对账记录；
+- `POST /api/monitor/reconciliation/corrections`：按统计周期（可加更正批次）消费更正回执；
+- `GET /api/monitor/reconciliation?download_id=&period=&batch=`：按原周期、下载标识或
+  更正批次回查对账记录。
+
+内部台账表（`report_result` / `report_snapshot` / `report_receipt` / `report_ledger` /
+`monitor_reconciliation`）不参与运营概览的模块统计。
+
+后端测试：`cd backend && python3 -m pytest tests -q`。
 
 ## 约定
 
